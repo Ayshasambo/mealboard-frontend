@@ -58,14 +58,17 @@
 //   );
 // }
 
-
 import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useCallback } from 'react';
 import { View } from 'react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 SplashScreen.preventAutoHideAsync();
+
+// Create a QueryClient instance (you can configure it if needed)
+const queryClient = new QueryClient();
 
 export default function Layout() {
   const [fontsLoaded] = useFonts({
@@ -80,13 +83,16 @@ export default function Layout() {
   if (!fontsLoaded) return null;
 
   return (
-    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <Stack
-        screenOptions={{
-          headerTitleStyle: { fontFamily: 'Poppins-Bold' },
-          contentStyle: { backgroundColor: '#fff' },
-        }}
-      />
-    </View>
+    <QueryClientProvider client={queryClient}>
+      <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+        <Stack
+          screenOptions={{
+            headerTitleStyle: { fontFamily: 'Poppins-Bold' },
+            contentStyle: { backgroundColor: '#fff' },
+          }}
+        />
+      </View>
+    </QueryClientProvider>
   );
 }
+

@@ -1,14 +1,38 @@
 
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, ActivityIndicator} from 'react-native';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import {Link}from 'expo-router';
 import MealCategory from '@/components/CardCategory';
+import { useFetch } from '@/hooks/useFetch'; 
+import {usePost} from '@/hooks/usePost'
+
+import Button from "@/components/Button"
+import AddCategory from '@/components/AddCategory'; 
+
+type Category = {
+  _id: string;
+  category: string;
+};
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
-  const categories = ['Breakfast', 'Lunch', 'Dinner', 'Drinks'];
+  const { data = [], isLoading, isError } = useFetch<Category[]>('/api/mealcategory');
+  //const postCategory = usePost('/categories', ['categories']);
+  const postCategory = usePost<Category, { category: string }>('/api/mealcategory', ['mealcategory']);
+
+  const categories = data.map((cat) => cat.category);
   const isOdd = categories.length % 2 === 1;
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [categoryName, setCategoryName] = useState('');
+
+  const handleAddCategory = (category: string) => {
+    postCategory.mutate({ category }); // assumes backend expects { name }
+    setIsModalVisible(false); 
+    setCategoryName('');
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 20, }}>
@@ -25,10 +49,13 @@ export default function Home() {
               }}
            />
         </View>
-        <TouchableOpacity style={{marginLeft: 10, backgroundColor: '#4CAF50', padding: 10, borderRadius: 10, }}>
+        <TouchableOpacity style={{marginLeft: 10, backgroundColor: '#D7B4F3', padding: 10, borderRadius: 10, }}>
           <Ionicons name="filter" size={20} color="#fff" />
         </TouchableOpacity>
       </View>
+       
+      {isLoading && <ActivityIndicator size="large" color="#3e6974" />}
+      {isError && <Text style={{ color: 'red' }}>Failed to load categories</Text>}
 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
       {categories.map((title, index) => {
@@ -36,24 +63,35 @@ export default function Home() {
 
           return (
             <View
-              key={title}
+              key={title + index}
               style={{
-                width: isLastOddCard ? '92%' : '48%',
+                width: isLastOddCard ? '100%' : '48%',
                 alignItems: isLastOddCard ? 'center' : 'flex-start',
                 marginBottom: 15,
               }}
             >
-            {/* <MealCategory title={title} onPress={() => console.log(`${title} pressed`)} /> */}
             <Link href={{ pathname: '/menu', params: { category: title } }} asChild>
                 <MealCategory title={title} onPress={() => console.log(`${title} pressed`)} />
               </Link>
             </View>
           );
         })}
-            {/* <MealCategory title="Breakfast" onPress={() => console.log('Breakfast pressed')} />
-            <MealCategory title="Lunch" onPress={() => console.log('Lunch pressed')} />
-            <MealCategory title="Dinner" onPress={() => console.log('Dinner pressed')} /> */}
       </View>
+      <Button
+        title="Add New Category"
+        onPress={() => {
+          setIsModalVisible(true)
+        }}
+      />
+      {isModalVisible && (
+        <AddCategory
+        visible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+        categoryName={categoryName}
+        setCategoryName={setCategoryName}
+        onAddCategory={handleAddCategory}
+        />
+      )}
     </ScrollView>
   );
 }

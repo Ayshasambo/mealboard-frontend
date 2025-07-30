@@ -13,7 +13,7 @@ type Props = {
       <TouchableOpacity
         onPress={onPress}
         style={{
-          backgroundColor: '#e0f2f1',
+          backgroundColor: '#FDEFF4',
           borderRadius: 12,
           padding: 20,
           margin: 5,
@@ -22,12 +22,14 @@ type Props = {
           //flexDirection: 'row'
         }}
       >
-        <Ionicons name="fast-food-outline" size={24} color="#4CAF50" />
+        <Ionicons name="fast-food-outline" size={24} color="#E91E63" />
         <Text
           style={{
             fontFamily: 'Poppins-Bold',
             fontSize: 16,
             marginTop: 10,
+            fontWeight: '500',
+            color: '#333',
           }}
         >
           {title}
